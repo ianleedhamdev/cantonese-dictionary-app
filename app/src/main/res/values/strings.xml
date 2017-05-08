@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Dictionary</string>
+    <string name="English">English</string>
+    <string name="ypinion">yipinion</string>
+    <string name="Cantonese">Cantonese</string>
+    <string name="Jyutping">Jyutping</string>
+    <string name="action_save">save</string>
+    <string name="action_delete">deleat</string>
+    <string name="action_delete_all_entries">Deleate all</string>
+    <string name="action_insert_dummy_data">Inset dummy</string>
+    <string name="editor_insert_word_failed">failed to input word</string>
+    <string name="editor_insert_word_successful">Word added successfully!</string>
+    <string name="editor_update_word_failed">word update failed</string>
+    <string name="editor_update_word_successful">successfully updated the word</string>
+    <string name="editor_activity_title_new_pet">Add a word</string>
+    <string name="editor_activity_title_new_word">add a new word</string>
+    <string name="editor_activity_title_edit_word">edit word</string>
+</resources>
