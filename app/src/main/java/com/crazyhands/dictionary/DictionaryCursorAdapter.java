@@ -68,7 +68,7 @@ public class DictionaryCursorAdapter extends CursorAdapter {
         ImageView editingTheWordImageView = (ImageView) view.findViewById(R.id.edit_word_button);
 
 
-        // Find the columns of pet attributes that we're interested in
+        // Find the columns of words attributes that we're interested in
         int idColumnindex = cursor.getColumnIndex(WordEntry._id);
         int englishColumnindex = cursor.getColumnIndex(WordEntry.COLUMN_DICTIONARY_ENGLISH);
         int JYUTPINGColumnIndex = cursor.getColumnIndex(WordEntry.COLUMN_DICTIONARY_JYUTPING);
