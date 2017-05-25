@@ -22,7 +22,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crazyhands.dictionary.App.Config;
-import com.crazyhands.dictionary.data.QueryUtils;
+import com.crazyhands.dictionary.data.MediaPlayeHelperClass;
+
 
 import net.gotev.uploadservice.MultipartUploadRequest;
 import net.gotev.uploadservice.UploadNotificationConfig;
@@ -75,6 +76,8 @@ public class CloudEditorActivity extends AppCompatActivity {
     private static final int CAMERA_CAPTURE_SOUND_REQUEST_CODE = 200;
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_SOUND = 2;
+
+    MediaPlayeHelperClass mediaPlayerHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,7 +197,6 @@ public class CloudEditorActivity extends AppCompatActivity {
 
                 mediaPlayer.start();
                 Log.v("the audio path is: ",AudioSavePathInDevice.getPath() );
-                String sound_path = AudioSavePathInDevice.getPath();
 
                 Toast.makeText(CloudEditorActivity.this, "Recording Playing",
                         Toast.LENGTH_LONG).show();
@@ -236,6 +238,10 @@ public class CloudEditorActivity extends AppCompatActivity {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 saveWord();
+                // Exit activity
+                //finish();
+                Intent intent = new Intent(CloudEditorActivity.this, CantoneseCloudList.class);
+                startActivity(intent);
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
@@ -280,7 +286,7 @@ public class CloudEditorActivity extends AppCompatActivity {
     public void uploadMultipart(String englishString, String jyutpingString, String cantoneseString, String soundstring) {
         //getting name for the image
         //getting the actual path of the image
-        String path = "//storage/emulated/0/Pictures/Hello Camera/"+soundstring;//this may be wrong todo check
+        String path = getFilesDir()+soundstring;//this may be wrong todo check
         Log.v("file address phone is:","//storage/emulated/0/Pictures/Hello Camera/SOUND_20170520_143612.3gp" );
 
         //Uploading code
@@ -295,7 +301,6 @@ public class CloudEditorActivity extends AppCompatActivity {
                     .addParameter("english", englishString)
                     .addParameter("cantonese", cantoneseString)
                     .addParameter("soundAddress", soundstring)
-                    .setNotificationConfig(new UploadNotificationConfig())
                     .setMaxRetries(2)
                     .setUtf8Charset()
                     .startUpload(); //Starting the upload
@@ -318,7 +323,7 @@ public class CloudEditorActivity extends AppCompatActivity {
 
     private void requestPermission() {
         ActivityCompat.requestPermissions(CloudEditorActivity.this, new
-                String[]{WRITE_EXTERNAL_STORAGE, RECORD_AUDIO}, RequestPermissionCode);
+                String[]{RECORD_AUDIO}, RequestPermissionCode);
     }
 
     @Override
@@ -327,12 +332,10 @@ public class CloudEditorActivity extends AppCompatActivity {
         switch (requestCode) {
             case RequestPermissionCode:
                 if (grantResults.length> 0) {
-                    boolean StoragePermission = grantResults[0] ==
-                            PackageManager.PERMISSION_GRANTED;
                     boolean RecordPermission = grantResults[1] ==
                             PackageManager.PERMISSION_GRANTED;
 
-                    if (StoragePermission && RecordPermission) {
+                    if (RecordPermission) {
                         Toast.makeText(CloudEditorActivity.this, "Permission Granted",
                                 Toast.LENGTH_LONG).show();
                     } else {
@@ -344,42 +347,22 @@ public class CloudEditorActivity extends AppCompatActivity {
     }
 
     public boolean checkPermission() {
-        int result = ContextCompat.checkSelfPermission(getApplicationContext(),
-                WRITE_EXTERNAL_STORAGE);
         int result1 = ContextCompat.checkSelfPermission(getApplicationContext(),
                 RECORD_AUDIO);
-        return result == PackageManager.PERMISSION_GRANTED &&
-                result1 == PackageManager.PERMISSION_GRANTED;
+        return  result1 == PackageManager.PERMISSION_GRANTED;
     }
 
 
     private File getOutputMediaFile(int type) {
 
-        // External sdcard location
-        File mediaStorageDir = new File(
-                Environment
-                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                IMAGE_DIRECTORY_NAME);
-
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Log.d(IMAGE_DIRECTORY_NAME, "Oops! Failed create "
-                        + IMAGE_DIRECTORY_NAME + " directory");
-                return null;
-            }
-        }
-
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss",
                 Locale.getDefault()).format(new Date());
         File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator
-                    + "IMG_" + timeStamp + ".jpg");
-        } else if (type == MEDIA_TYPE_SOUND) {
+
+         if (type == MEDIA_TYPE_SOUND) {
             String jyutpingString = mJyutpingEditText.getText().toString().trim();
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator
+            mediaFile = new File(getFilesDir() + File.separator
                     + jyutpingString + timeStamp + ".3gp");
         } else {
             return null;

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,7 +34,7 @@ import java.util.List;
 import static com.android.volley.VolleyLog.TAG;
 import static com.crazyhands.dictionary.App.Config.URL_GET_CANTONESE;
 
-public class CantoneseCloudList extends Activity {
+public class CantoneseCloudList extends AppCompatActivity {
 
     private CantoneseListAdapter mAdapter;
 
@@ -57,8 +58,6 @@ public class CantoneseCloudList extends Activity {
                 ListView wordListView = (ListView) findViewById(R.id.list);
             }
         });
-
-
 
 
         final RequestQueue requestque = Volley.newRequestQueue(CantoneseCloudList.this);
@@ -86,8 +85,8 @@ public class CantoneseCloudList extends Activity {
 
                         if (eventss != null && !eventss.isEmpty()) {
                             mAdapter.addAll(eventss);
-                           // View loadingIndicator = findViewById(R.id.loading_indicator);
-                           // loadingIndicator.setVisibility(View.GONE);
+                            // View loadingIndicator = findViewById(R.id.loading_indicator);
+                            // loadingIndicator.setVisibility(View.GONE);
                         }
 
                         requestque.stop();
@@ -151,7 +150,4 @@ public class CantoneseCloudList extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-
-
 }

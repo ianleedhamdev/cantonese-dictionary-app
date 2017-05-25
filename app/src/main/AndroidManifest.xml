@@ -2,9 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.crazyhands.dictionary">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -14,7 +12,7 @@
         android:roundIcon="@drawable/cantonese_dictionary"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CatalogActivity">
+        <activity android:name=".CantoneseCloudList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +26,7 @@
             android:authorities="com.crazyhands.dictionary"
             android:exported="false" />
 
-        <activity android:name=".CantoneseCloudList" />
+        <activity android:name=".CatalogActivity" />
         <activity android:name=".CloudEditorActivity"></activity>
     </application>
 
