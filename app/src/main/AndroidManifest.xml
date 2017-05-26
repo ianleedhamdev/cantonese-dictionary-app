@@ -12,7 +12,7 @@
         android:roundIcon="@drawable/cantonese_dictionary"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".CantoneseCloudList">
+        <activity android:name=".Fragments.BaseActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".EditorActivity" />
+        <activity android:name=".CantoneseCloudList" />
 
         <provider
             android:name=".data.DictionaryProvider"

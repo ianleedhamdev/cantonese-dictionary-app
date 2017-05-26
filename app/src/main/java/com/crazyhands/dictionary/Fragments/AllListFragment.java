@@ -1,14 +1,16 @@
-package com.crazyhands.dictionary;
+package com.crazyhands.dictionary.Fragments;
 
-import android.app.Activity;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -25,8 +27,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.crazyhands.dictionary.Adapters.CantoneseListAdapter;
-import com.crazyhands.dictionary.Fragments.AllListFragment;
-import com.crazyhands.dictionary.Fragments.BaseActivity;
+import com.crazyhands.dictionary.CloudEditorActivity;
+import com.crazyhands.dictionary.R;
 import com.crazyhands.dictionary.data.QueryUtils;
 import com.crazyhands.dictionary.items.Cantonese_List_item;
 
@@ -36,31 +38,30 @@ import java.util.List;
 import static com.android.volley.VolleyLog.TAG;
 import static com.crazyhands.dictionary.App.Config.URL_GET_CANTONESE;
 
-public class CantoneseCloudList extends AppCompatActivity {
+/**
+ * A simple {@link Fragment} subclass.
+ *
+ */
+
+public class AllListFragment extends Fragment {
 
     private CantoneseListAdapter mAdapter;
 
+    public AllListFragment() {
+        // Required empty public constructor
+    }
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        final View rootView = inflater.inflate(R.layout.fragment_all_list, container, false);
 
 
-        // Setup FAB to open EditorActivity
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(CantoneseCloudList.this, BaseActivity.class);
-                startActivity(intent);
 
 
-            }
-        });
-
-
-        final RequestQueue requestque = Volley.newRequestQueue(CantoneseCloudList.this);
+        final RequestQueue requestque = Volley.newRequestQueue(getActivity());
 
         StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE,
 
@@ -73,10 +74,10 @@ public class CantoneseCloudList extends AppCompatActivity {
                         final List<Cantonese_List_item> eventss = QueryUtils.extractDataFromJson(response);
 
                         // Find the ListView which will be populated with the word data
-                        ListView wordListView = (ListView) findViewById(R.id.list);
+                        ListView wordListView = (ListView) rootView.findViewById(R.id.list);
 
                         // Create a new adapter that takes an empty list of events as input
-                        mAdapter = new CantoneseListAdapter(CantoneseCloudList.this, new ArrayList<Cantonese_List_item>());
+                        mAdapter = new CantoneseListAdapter(getActivity(), new ArrayList<Cantonese_List_item>());
 
                         // Set the adapter on the {@link ListView}
                         // so the list can be populated in the user interface
@@ -100,7 +101,7 @@ public class CantoneseCloudList extends AppCompatActivity {
                         //textview.setText("someshit gone down!");
                         volleyError.printStackTrace();
                         Log.e(TAG, "Response error" + volleyError.getMessage());
-                        Toast.makeText(CantoneseCloudList.this,
+                        Toast.makeText(getActivity(),
                                 volleyError.getMessage(), Toast.LENGTH_LONG).show();
                         String message = null;
                         if (volleyError instanceof NetworkError) {
@@ -117,37 +118,15 @@ public class CantoneseCloudList extends AppCompatActivity {
                             message = "Connection TimeOut! Please check your internet connection.";
                         }
 
-                        Toast.makeText(CantoneseCloudList.this, message, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
                         requestque.stop();
                     }
                 });
         requestque.add(request);
 
+        return rootView;
+
     }
 
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu options from the res/menu/menu_catalog.xml file.
-        // This adds menu items to the app bar.
-        getMenuInflater().inflate(R.menu.menu_catalog, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // User clicked on a menu option in the app bar overflow menu
-        switch (item.getItemId()) {
-            // Respond to a click on the "Insert dummy data" menu option
-            case R.id.action_insert_dummy_data:
-
-                return true;
-            // Respond to a click on the "Delete all entries" menu option
-            case R.id.action_delete_all_entries:
-
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 }

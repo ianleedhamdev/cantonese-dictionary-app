@@ -17,4 +17,7 @@
     <string name="editor_activity_title_edit_word">Edit word</string>
     <string name="ConnectionErrorMessage">Connection error</string>
     <string name="to_cloud_version">To the cloud!</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
