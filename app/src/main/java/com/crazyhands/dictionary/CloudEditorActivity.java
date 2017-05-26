@@ -18,25 +18,50 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.crazyhands.dictionary.Adapters.CantoneseListAdapter;
 import com.crazyhands.dictionary.App.Config;
 import com.crazyhands.dictionary.data.MediaPlayeHelperClass;
+import com.crazyhands.dictionary.data.QueryUtils;
+import com.crazyhands.dictionary.items.Cantonese_List_item;
 
 
 import net.gotev.uploadservice.MultipartUploadRequest;
 import net.gotev.uploadservice.UploadNotificationConfig;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static com.android.volley.VolleyLog.TAG;
+import static com.crazyhands.dictionary.App.Config.URL_GET_CANTONESE_WHERE;
+import static com.crazyhands.dictionary.App.Config.URL_GET_CANTONESE_WHERE_ID;
 
 public class CloudEditorActivity extends AppCompatActivity {
 
@@ -67,17 +92,12 @@ public class CloudEditorActivity extends AppCompatActivity {
 
     public static final int RequestPermissionCode = 1;
     MediaPlayer mediaPlayer ;
-    // directory name to store captured images and videos
 
-    private static final String IMAGE_DIRECTORY_NAME = "Hello Camera";
 
     // Activity request codes
-    private static final int CAMERA_CAPTURE_IMAGE_REQUEST_CODE = 100;
-    private static final int CAMERA_CAPTURE_SOUND_REQUEST_CODE = 200;
-    public static final int MEDIA_TYPE_IMAGE = 1;
+
     public static final int MEDIA_TYPE_SOUND = 2;
 
-    MediaPlayeHelperClass mediaPlayerHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,10 +112,17 @@ public class CloudEditorActivity extends AppCompatActivity {
         // in order to figure out if we're creating a new pet or editing an existing one.
         Intent intent = getIntent();
         mCurrentWordUri = intent.getData();
+        int wordid = intent.getIntExtra("wordid", 0);
+
+
+        mEnglishEditText = (EditText) findViewById(R.id.cloud_edit_English);
+        mJyutpingEditText = (EditText) findViewById(R.id.cloud_edit_Jyutping);
+        mCantoneseEditText = (EditText) findViewById(R.id.cloud_edit_Cantonese);
+        mSoundtextview = (TextView)findViewById(R.id.cloud_soundRecorderTextView);
 
         // If the intent DOES NOT contain a word content URI, then we know that we are
         // creating a new word.
-        if (mCurrentWordUri == null) {
+        if (wordid == 0) {
             // This is a new pet, so change the app bar to say "Add a Word"
             setTitle(getString(R.string.editor_activity_title_new_word));
 
@@ -110,20 +137,18 @@ public class CloudEditorActivity extends AppCompatActivity {
             // and display the current values in the editor
             //getLoaderManager().initLoader(EXISTING_WORD_LOADER, null, CloudEditorActivity.this);
             //Todo do I need a loader?
+            addValuesToFields(wordid);
         }
 
 
 
-        mEnglishEditText = (EditText) findViewById(R.id.cloud_edit_English);
-        mJyutpingEditText = (EditText) findViewById(R.id.cloud_edit_Jyutping);
-        mCantoneseEditText = (EditText) findViewById(R.id.cloud_edit_Cantonese);
+
         /** buttons for the sound recorder */
 
         buttonStart = (Button) findViewById(R.id.cloud_record_button);
         buttonStop = (Button) findViewById(R.id.cloud_stop_button);
         buttonPlayLastRecordAudio = (Button) findViewById(R.id.cloud_play_button);
         buttonStopPlayingRecording = (Button)findViewById(R.id.cloud_Rerecord_button);
-        mSoundtextview = (TextView)findViewById(R.id.cloud_soundRecorderTextView);
         buttonStop.setEnabled(false);
         buttonPlayLastRecordAudio.setEnabled(false);
         buttonStopPlayingRecording.setEnabled(false);
@@ -268,9 +293,10 @@ public class CloudEditorActivity extends AppCompatActivity {
         // and check if all the fields in the editor are blank
         if (mCurrentWordUri == null &&
                 TextUtils.isEmpty(englishString) && TextUtils.isEmpty(jyutpingString) &&
-                TextUtils.isEmpty(cantoneseString)) {
+                TextUtils.isEmpty(cantoneseString)&&
+                TextUtils.isEmpty(soundstring)) {
             // Since no fields were modified, we can return early without creating a new word.
-            // No need to create ContentValues and no need to do any ContentProvider operations. todo why dont tese toasts work?
+            // No need to create ContentValues and no need to do any ContentProvider operations. todo why dont these toasts work?
             Toast.makeText(CloudEditorActivity.this, "noo", Toast.LENGTH_LONG);
             return;
         } else {
@@ -286,8 +312,10 @@ public class CloudEditorActivity extends AppCompatActivity {
     public void uploadMultipart(String englishString, String jyutpingString, String cantoneseString, String soundstring) {
         //getting name for the image
         //getting the actual path of the image
-        String path = AudioSavePathInDevice.getPath();//this may be wrong todo check
-        Log.v("file address phone is:",getFilesDir()+soundstring );
+        String path = getFilesDir()+"/"+soundstring;//this may be wrong todo check
+        //Log.v("file plus sound str is:",getFilesDir()+"/"+soundstring );
+        Log.v("file get path is:",AudioSavePathInDevice.getPath() );
+
 
         //Uploading code
         try {
@@ -369,6 +397,119 @@ public class CloudEditorActivity extends AppCompatActivity {
         }
 
         return mediaFile;
+    }
+
+    private void addValuesToFields(int wordid){
+        mEnglishEditText.setText("things english");
+        mJyutpingEditText.setText("things juytping");
+        mCantoneseEditText.setText("things cantonese");
+        //mSoundtextview.setText("things sound location");
+
+        Toast.makeText(CloudEditorActivity.this, "word id is: "+ wordid,
+                Toast.LENGTH_LONG).show();
+        final RequestQueue requestque = Volley.newRequestQueue(CloudEditorActivity.this);
+
+        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE_ID+"/?Wordid="+wordid,
+
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "Events Response: " + response.toString());
+
+                        // Extract relevant fields from the JSON response
+
+                        // If the JSON string is empty or null, then return early.
+                        if (TextUtils.isEmpty(response)) {
+                            return;
+                        }
+
+
+
+                        // Try to parse the JSON response string. If there's a problem with the way the JSON
+                        // is formatted, a JSONException exception object will be thrown.
+                        // Catch the exception so the app doesn't crash, and print the error message to the logs.
+                        try {
+
+                            // Create a JSONObject from the JSON response string
+                            JSONObject baseJsonResponse = new JSONObject(response);
+
+                            // Extract the JSONArray associated with the key called "result",
+                            // which represents a list of features (or events).
+                            JSONArray eventsarray = baseJsonResponse.getJSONArray("result");
+
+                            // For each earthquake in the eventsarray, create an {@link Event} object
+                            for (int i = 0; i < eventsarray.length(); i++) {
+
+                                // Get a single event at position i within the list of events
+                                JSONObject currentWord = eventsarray.getJSONObject(i);
+
+
+                                // Extract the value for the key called "id"
+                                int id = currentWord.getInt("id");
+
+                                // Extract the value for the key called "English"
+                                String english = currentWord.getString("English");
+
+                                // Extract the value for the key called "jyutping",
+                                String jyutping = currentWord.getString("jyutping");
+
+                                // Extract the value for the key called "cantonese"
+                                String cantonese = currentWord.getString("cantonese");
+
+                                // Extract the value for the key called "sound address"
+                                String soundAddress = currentWord.getString("soundAddress");
+
+                                mEnglishEditText.setText(english);
+                                mJyutpingEditText.setText(jyutping);
+                                mCantoneseEditText.setText(cantonese);
+                                mSoundtextview.setText(soundAddress);
+
+                            }
+
+                        } catch (JSONException e) {
+                            // If an error is thrown when executing any of the above statements in the "try" block,
+                            // catch the exception here, so the app doesn't crash. Print a log message
+                            // with the message from the exception.
+                            Log.e("QueryUtils", "Problem parsing the JSON results", e);
+                        }
+
+
+
+                        requestque.stop();
+
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        //textview.setText("someshit gone down!");
+                        volleyError.printStackTrace();
+                        Log.e(TAG, "Response error" + volleyError.getMessage());
+                        Toast.makeText(CloudEditorActivity.this,
+                                volleyError.getMessage(), Toast.LENGTH_LONG).show();
+                        String message = null;
+                        if (volleyError instanceof NetworkError) {
+                            message = getString(R.string.ConnectionErrorMessage);
+                        } else if (volleyError instanceof ServerError) {
+                            message = "The server could not be found. Please try again after some time!!";
+                        } else if (volleyError instanceof AuthFailureError) {
+                            message = "Cannot connect to Internet...Please check your connection!";
+                        } else if (volleyError instanceof ParseError) {
+                            message = "Parsing error! Please try again after some time!!";
+                        } else if (volleyError instanceof NoConnectionError) {
+                            message = "Cannot connect to Internet...Please check your connection!";
+                        } else if (volleyError instanceof TimeoutError) {
+                            message = "Connection TimeOut! Please check your internet connection.";
+                        }
+
+                        Toast.makeText(CloudEditorActivity.this, message, Toast.LENGTH_SHORT).show();
+                        requestque.stop();
+                    }
+                });
+        requestque.add(request);
+
+
     }
 
 

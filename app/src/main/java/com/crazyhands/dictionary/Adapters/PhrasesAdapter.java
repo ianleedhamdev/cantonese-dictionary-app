@@ -15,7 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crazyhands.dictionary.CloudEditorActivity;
-import com.crazyhands.dictionary.EditorActivity;
 import com.crazyhands.dictionary.R;
 import com.crazyhands.dictionary.data.Contract;
 import com.crazyhands.dictionary.items.Cantonese_List_item;
@@ -24,10 +23,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Created by crazyhands on 08/05/2017.
+ * Created by crazyhands on 26/05/2017.
  */
 
-public class CantoneseListAdapter extends ArrayAdapter<Cantonese_List_item> {
+public class PhrasesAdapter extends ArrayAdapter<Cantonese_List_item> {
 
     private static final String LOG_TAG = CantoneseListAdapter.class.getSimpleName();
 
@@ -39,7 +38,7 @@ public class CantoneseListAdapter extends ArrayAdapter<Cantonese_List_item> {
      * @param context    The current context. Used to inflate the layout file.
      * @param allclasses A List of ActivityLayout objects to display in a list
      */
-    public CantoneseListAdapter(Activity context, ArrayList<Cantonese_List_item> allclasses) {
+    public PhrasesAdapter(Activity context, ArrayList<Cantonese_List_item> allclasses) {
 
         // Here, we initialize the ArrayAdapter's internal storage for the context and the list.
         // the second argument is used when the ArrayAdapter is populating a single TextView.
@@ -63,31 +62,31 @@ public class CantoneseListAdapter extends ArrayAdapter<Cantonese_List_item> {
         View listItemView = convertView;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.cantonese_list_item_layout, parent, false);
+                    R.layout.phrase_layout, parent, false);
         }
 
-        ImageView playsoundImageview = (ImageView) listItemView.findViewById(R.id.playbutton);
-        ImageView editingTheWordImageView = (ImageView) listItemView.findViewById(R.id.edit_word_button);
+        ImageView playsoundImageview = (ImageView) listItemView.findViewById(R.id.phrase_playbutton);
+        ImageView editingTheWordImageView = (ImageView) listItemView.findViewById(R.id.phrase_edit_word_button);
 
         // Get the {@link AndroidFlavor} object located at this position in the list
         final Cantonese_List_item currentListItem = getItem(position);
 
         // Find the TextView in the list_item.xml layout with the ID textViewEglish
-        TextView englishTextView = (TextView) listItemView.findViewById(R.id.textViewEnglish);
+        TextView englishTextView = (TextView) listItemView.findViewById(R.id.phrase_textViewEnglish);
         //Get the english name from the current Cantonese_List_item object and
         // set this text on the english TextView
         englishTextView.setText(currentListItem.getenglish());
 
 
         // Find the TextView in the list_item.xml layout with the ID textViewJyutping
-        TextView jyutTextView = (TextView) listItemView.findViewById(R.id.textViewJyutping);
+        TextView jyutTextView = (TextView) listItemView.findViewById(R.id.phrase_textViewJyutping);
 
         // Get the jyutping from the current List_item object and
         // set this text on the time TextView
         jyutTextView.setText(currentListItem.getjyut());
 
         //Find the TextView in the list_item.xml layout with the ID textViewCantonese
-        TextView cantonTextView = (TextView) listItemView.findViewById(R.id.textViewCantonese);
+        TextView cantonTextView = (TextView) listItemView.findViewById(R.id.phrase_textViewCantonese);
 
         // Get the cantonese from the current List_item object and
         // set this text on the cantonese TextView

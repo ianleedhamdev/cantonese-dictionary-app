@@ -7,10 +7,11 @@ import android.support.v4.app.FragmentPagerAdapter;
 import com.crazyhands.dictionary.Fragments.AllListFragment;
 import com.crazyhands.dictionary.Fragments.BasicWordsFragment;
 import com.crazyhands.dictionary.Fragments.NumbersFragment;
+import com.crazyhands.dictionary.Fragments.PhrasesFragment;
 
 
 public class FragmentAdapter extends FragmentPagerAdapter {
-    private String tabTitles[] = new String[]{"basic", "all", "numbers"};
+    private String tabTitles[] = new String[]{"basic", "numbers", "Phrases", "all"};
 
     public FragmentAdapter(FragmentManager fm) {
         super(fm);
@@ -21,9 +22,11 @@ public class FragmentAdapter extends FragmentPagerAdapter {
         if (position == 0) {
             return new BasicWordsFragment();
         } else if (position == 1) {
-            return new AllListFragment();
-        } else if (position == 2) {
             return new NumbersFragment();
+        } else if (position == 2) {
+            return new PhrasesFragment();
+        } else if (position == 3) {
+            return new AllListFragment();
         } else return null;
     }
 
@@ -35,6 +38,6 @@ public class FragmentAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 3;
+        return 4;
     }
 }

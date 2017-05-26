@@ -1,0 +1,69 @@
+<LinearLayout
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/relparent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <TextView
+        android:id="@+id/phrase_textViewCantonese"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_weight="4"
+        android:fontFamily="sans-serif"
+        android:padding="20dp"
+        android:text="h"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:textColor="#AEB6BD" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/linearlay2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/linearlay"
+        android:layout_marginTop="5dp"
+        android:layout_weight="4"
+        android:orientation="vertical"
+        android:padding="10dp">
+        <TextView
+            android:id="@+id/phrase_textViewEnglish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:textAppearance="?android:textAppearanceSmall"
+            android:textColor="#2B3D4D" />
+        <TextView
+            android:id="@+id/phrase_textViewJyutping"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:textAppearance="?android:textAppearanceSmall"
+            android:textColor="#AEB6BD" />
+    </LinearLayout>
+
+</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+<ImageView
+android:id="@+id/phrase_playbutton"
+android:layout_width="0dp"
+android:layout_height="wrap_content"
+android:layout_weight="2"
+android:padding="5dp"
+android:src="@drawable/ic_play_arrow_black_24dp" />
+<ImageView
+android:id="@+id/phrase_edit_word_button"
+android:layout_width="0dp"
+android:layout_height="wrap_content"
+android:layout_toRightOf="@id/phrase_playbutton"
+android:layout_weight="2"
+android:padding="5dp"
+android:src="@mipmap/ic_dots" />
+    </LinearLayout>
+</LinearLayout>
