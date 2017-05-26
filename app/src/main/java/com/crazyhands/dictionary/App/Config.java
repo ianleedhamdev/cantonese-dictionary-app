@@ -13,4 +13,7 @@ public class Config {
 
     public static String URL_UPLOAD_FILE = "";
 
+    public static String URL_GET_CANTONESE_WHERE = "http://s681173862.websitehome.co.uk/ian/Dictionary/getCantoneseWhere.php";
+
+
 }

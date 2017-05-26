@@ -270,7 +270,7 @@ public class CloudEditorActivity extends AppCompatActivity {
                 TextUtils.isEmpty(englishString) && TextUtils.isEmpty(jyutpingString) &&
                 TextUtils.isEmpty(cantoneseString)) {
             // Since no fields were modified, we can return early without creating a new word.
-            // No need to create ContentValues and no need to do any ContentProvider operations.
+            // No need to create ContentValues and no need to do any ContentProvider operations. todo why dont tese toasts work?
             Toast.makeText(CloudEditorActivity.this, "noo", Toast.LENGTH_LONG);
             return;
         } else {
@@ -286,8 +286,8 @@ public class CloudEditorActivity extends AppCompatActivity {
     public void uploadMultipart(String englishString, String jyutpingString, String cantoneseString, String soundstring) {
         //getting name for the image
         //getting the actual path of the image
-        String path = getFilesDir()+soundstring;//this may be wrong todo check
-        Log.v("file address phone is:","//storage/emulated/0/Pictures/Hello Camera/SOUND_20170520_143612.3gp" );
+        String path = AudioSavePathInDevice.getPath();//this may be wrong todo check
+        Log.v("file address phone is:",getFilesDir()+soundstring );
 
         //Uploading code
         try {
