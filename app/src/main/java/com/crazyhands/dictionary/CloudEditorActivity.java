@@ -15,10 +15,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +40,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.crazyhands.dictionary.Adapters.CantoneseListAdapter;
 import com.crazyhands.dictionary.App.Config;
+import com.crazyhands.dictionary.Fragments.BaseActivity;
+import com.crazyhands.dictionary.data.Contract.WordEntry;
 import com.crazyhands.dictionary.data.MediaPlayeHelperClass;
 import com.crazyhands.dictionary.data.QueryUtils;
 import com.crazyhands.dictionary.items.Cantonese_List_item;
@@ -53,51 +59,76 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static com.android.volley.VolleyLog.TAG;
+import static com.crazyhands.dictionary.App.Config.URL_DELEAT_CANTONESE_WHERE_ID;
 import static com.crazyhands.dictionary.App.Config.URL_GET_CANTONESE_WHERE;
 import static com.crazyhands.dictionary.App.Config.URL_GET_CANTONESE_WHERE_ID;
 
 public class CloudEditorActivity extends AppCompatActivity {
 
 
-
-    /** Identifier for the word data loader */
-    private static final int EXISTING_WORD_LOADER = 0;
-
-    /** Content URI for the existing word (null if it's a new word) */
+    /**
+     * Content URI for the existing word (null if it's a new word)
+     */
     private Uri mCurrentWordUri;
 
-    /** EditText field to enter the words's english */
+    /**
+     * EditText field to enter the words's english
+     */
     private EditText mEnglishEditText;
 
-    /** EditText field to enter the word's Jyutping */
+    /**
+     * EditText field to enter the word's Jyutping
+     */
     private EditText mJyutpingEditText;
 
-    /** EditText field to enter the word's Cantonese */
+    /**
+     * EditText field to enter the word's Cantonese
+     */
     private EditText mCantoneseEditText;
 
-    /** variables for the sound recorder */
+    /**
+     * variables for the sound recorder
+     */
 
     Button buttonStart, buttonStop, buttonPlayLastRecordAudio,
-            buttonStopPlayingRecording ;
+            buttonStopPlayingRecording;
     File AudioSavePathInDevice = null;
     TextView mSoundtextview;
-    MediaRecorder mediaRecorder ;
+    MediaRecorder mediaRecorder;
 
     public static final int RequestPermissionCode = 1;
-    MediaPlayer mediaPlayer ;
+    MediaPlayer mediaPlayer;
 
-
+    boolean recorded;
+    int wordid = -1;
     // Activity request codes
 
     public static final int MEDIA_TYPE_SOUND = 2;
 
+    /** EditText field to enter the pet's gender */
+    private Spinner mTypeSpinner;
+
+    /** Boolean flag that keeps track of whether the word has been edited (true) or not (false) */
+    private boolean mWordHasChanged = false;
+
+    private int mType = 0;
+
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            mWordHasChanged = true;
+            return false;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,24 +136,22 @@ public class CloudEditorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_cloud_editor);
 
 
-
-
-
         // Examine the intent that was used to launch this activity,
         // in order to figure out if we're creating a new pet or editing an existing one.
         Intent intent = getIntent();
         mCurrentWordUri = intent.getData();
-        int wordid = intent.getIntExtra("wordid", 0);
+        wordid = intent.getIntExtra("wordid", -1);
 
 
         mEnglishEditText = (EditText) findViewById(R.id.cloud_edit_English);
         mJyutpingEditText = (EditText) findViewById(R.id.cloud_edit_Jyutping);
         mCantoneseEditText = (EditText) findViewById(R.id.cloud_edit_Cantonese);
-        mSoundtextview = (TextView)findViewById(R.id.cloud_soundRecorderTextView);
+        mSoundtextview = (TextView) findViewById(R.id.cloud_soundRecorderTextView);
+        mTypeSpinner = (Spinner) findViewById(R.id.spinner_type);
 
         // If the intent DOES NOT contain a word content URI, then we know that we are
         // creating a new word.
-        if (wordid == 0) {
+        if (wordid == -1) {
             // This is a new pet, so change the app bar to say "Add a Word"
             setTitle(getString(R.string.editor_activity_title_new_word));
 
@@ -132,6 +161,7 @@ public class CloudEditorActivity extends AppCompatActivity {
         } else {
             // Otherwise this is an existing word, so change app bar to say "Edit Word"
             setTitle(getString(R.string.editor_activity_title_edit_word));
+            recorded = false;
 
             // Initialize a loader to read the pet data from the database
             // and display the current values in the editor
@@ -141,26 +171,28 @@ public class CloudEditorActivity extends AppCompatActivity {
         }
 
 
-
-
-        /** buttons for the sound recorder */
+        // buttons for the sound recorder
 
         buttonStart = (Button) findViewById(R.id.cloud_record_button);
         buttonStop = (Button) findViewById(R.id.cloud_stop_button);
         buttonPlayLastRecordAudio = (Button) findViewById(R.id.cloud_play_button);
-        buttonStopPlayingRecording = (Button)findViewById(R.id.cloud_Rerecord_button);
+        buttonStopPlayingRecording = (Button) findViewById(R.id.cloud_Rerecord_button);
         buttonStop.setEnabled(false);
         buttonPlayLastRecordAudio.setEnabled(false);
         buttonStopPlayingRecording.setEnabled(false);
 
-        /** onclick listeners for the sound recorder */
+//spiner on click listener
+        mTypeSpinner.setOnTouchListener(mTouchListener);
+
+        // onclick listeners for the sound recorder
 
 
         buttonStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if(checkPermission()) {
+                if (checkPermission()) {
+                    recorded = true;
 
                     AudioSavePathInDevice = getOutputMediaFile(MEDIA_TYPE_SOUND);
                     mSoundtextview.setText(AudioSavePathInDevice.getName());
@@ -221,10 +253,10 @@ public class CloudEditorActivity extends AppCompatActivity {
                 }
 
                 mediaPlayer.start();
-                Log.v("the audio path is: ",AudioSavePathInDevice.getPath() );
+                Log.v("the audio path is: ", AudioSavePathInDevice.getPath());
 
                 Toast.makeText(CloudEditorActivity.this, "Recording Playing",
-                        Toast.LENGTH_LONG).show();
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -236,7 +268,7 @@ public class CloudEditorActivity extends AppCompatActivity {
                 buttonStopPlayingRecording.setEnabled(false);
                 buttonPlayLastRecordAudio.setEnabled(true);
 
-                if(mediaPlayer != null){
+                if (mediaPlayer != null) {
                     mediaPlayer.stop();
                     mediaPlayer.release();
                     MediaRecorderReady();
@@ -244,6 +276,47 @@ public class CloudEditorActivity extends AppCompatActivity {
             }
         });
 
+        setupSpinner();
+    }
+    /**
+     * Setup the dropdown spinner that allows the user to select the gender of the pet.
+     */
+    private void setupSpinner() {
+        // Create adapter for spinner. The list options are from the String array it will use
+        // the spinner will use the default layout
+        ArrayAdapter typeSpinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.array_type_options, android.R.layout.simple_spinner_item);
+
+        // Specify dropdown layout style - simple list view with 1 item per line
+        typeSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+
+        // Apply the adapter to the spinner
+        mTypeSpinner.setAdapter(typeSpinnerAdapter);
+
+        // Set the integer mSelected to the constant values
+        mTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selection = (String) parent.getItemAtPosition(position);
+                if (!TextUtils.isEmpty(selection)) {
+                    if (selection.equals(getString(R.string.type_all))) {
+                        mType = WordEntry.TYPE_ALL;
+                    } else if (selection.equals(getString(R.string.type_basic))) {
+                        mType = WordEntry.TYPE_BASIC;
+                    } else if (selection.equals(getString(R.string.type_phrase))) {
+                        mType = WordEntry.TYPE_PHRASE;
+                    } else {
+                        mType = WordEntry.TYPE_NUMBER;
+                    }
+                }
+            }
+
+            // Because AdapterView is an abstract class, onNothingSelected must be defined
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mType = WordEntry.TYPE_ALL;
+            }
+        });
     }
 
 
@@ -265,12 +338,14 @@ public class CloudEditorActivity extends AppCompatActivity {
                 saveWord();
                 // Exit activity
                 //finish();
-                Intent intent = new Intent(CloudEditorActivity.this, CantoneseCloudList.class);
+                Intent intent = new Intent(CloudEditorActivity.this, BaseActivity.class);
                 startActivity(intent);
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
-                // Do nothing for now
+                deleateWord();
+                Intent iintent = new Intent(CloudEditorActivity.this, BaseActivity.class);
+                startActivity(iintent);
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
@@ -293,18 +368,19 @@ public class CloudEditorActivity extends AppCompatActivity {
         // and check if all the fields in the editor are blank
         if (mCurrentWordUri == null &&
                 TextUtils.isEmpty(englishString) && TextUtils.isEmpty(jyutpingString) &&
-                TextUtils.isEmpty(cantoneseString)&&
+                TextUtils.isEmpty(cantoneseString) &&
                 TextUtils.isEmpty(soundstring)) {
             // Since no fields were modified, we can return early without creating a new word.
-            // No need to create ContentValues and no need to do any ContentProvider operations. todo why dont these toasts work?
-            Toast.makeText(CloudEditorActivity.this, "noo", Toast.LENGTH_LONG);
+            // No need to create ContentValues and no need to do any ContentProvider operations.
+            Toast.makeText(CloudEditorActivity.this, "noo", Toast.LENGTH_LONG).show();
             return;
         } else {
             uploadMultipart(englishString, jyutpingString, cantoneseString, soundstring);
             //todo add toast of success or failure
-            Toast.makeText(CloudEditorActivity.this, "yay", Toast.LENGTH_LONG);
+            Toast.makeText(CloudEditorActivity.this, "yay", Toast.LENGTH_LONG).show();
         }
     }
+
     /*
     * This is the method responsible for image upload
     * We need the full image path and the name for the image in this method
@@ -312,36 +388,45 @@ public class CloudEditorActivity extends AppCompatActivity {
     public void uploadMultipart(String englishString, String jyutpingString, String cantoneseString, String soundstring) {
         //getting name for the image
         //getting the actual path of the image
-        String path = getFilesDir()+"/"+soundstring;//this may be wrong todo check
-        //Log.v("file plus sound str is:",getFilesDir()+"/"+soundstring );
-        Log.v("file get path is:",AudioSavePathInDevice.getPath() );
+        String path;
+        if (recorded == true) {
+            path = getFilesDir() + "/" + soundstring;//this may be wrong todo check
+            Log.v("file plus sound str is:", getFilesDir() + "/" + soundstring);
 
+        } else {
+            path = null;
+        }
+        if (recorded == true) {
 
-        //Uploading code
-        try {
-            String uploadId = UUID.randomUUID().toString();
-            //Creating a multi part request
-            new MultipartUploadRequest(this, uploadId, Config.URL_ADD_WORD)
-                    .addFileToUpload(path, "userfile") //Adding file
-                    .addParameter("name", soundstring) //Adding text parameter to the request
-                    .addParameter("english", englishString)
-                    .addParameter("jyutping", jyutpingString)
-                    .addParameter("english", englishString)
-                    .addParameter("cantonese", cantoneseString)
-                    .addParameter("soundAddress", soundstring)
-                    .setMaxRetries(2)
-                    .setUtf8Charset()
-                    .startUpload(); //Starting the upload
+            //Uploading code
+            try {
+                String uploadId = UUID.randomUUID().toString();
+                //Creating a multi part request
+                new MultipartUploadRequest(this, uploadId, Config.URL_ADD_WORD)
+                        .addFileToUpload(path, "userfile") //Adding file
+                        .addParameter("id", Integer.toString(wordid))
+                        .addParameter("name", soundstring) //Adding text parameter to the request
+                        .addParameter("type", String.valueOf(mType))
+                        .addParameter("jyutping", jyutpingString)
+                        .addParameter("english", englishString)
+                        .addParameter("cantonese", cantoneseString)
+                        .addParameter("soundAddress", soundstring)
+                        .setMaxRetries(2)
+                        .setUtf8Charset()
+                        .startUpload(); //Starting the upload
 
-        } catch (Exception exc) {
-            Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+            } catch (Exception exc) {
+                Toast.makeText(this, exc.getMessage(), Toast.LENGTH_SHORT).show();
+            }}
+        else {
+            //todo add volley call for editing without uploading file
         }
     }
 
 //methods for the sound recording
 
-    public void MediaRecorderReady(){
-        mediaRecorder=new MediaRecorder();
+    public void MediaRecorderReady() {
+        mediaRecorder = new MediaRecorder();
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mediaRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
@@ -359,7 +444,7 @@ public class CloudEditorActivity extends AppCompatActivity {
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case RequestPermissionCode:
-                if (grantResults.length> 0) {
+                if (grantResults.length > 0) {
                     boolean RecordPermission = grantResults[1] ==
                             PackageManager.PERMISSION_GRANTED;
 
@@ -367,7 +452,7 @@ public class CloudEditorActivity extends AppCompatActivity {
                         Toast.makeText(CloudEditorActivity.this, "Permission Granted",
                                 Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(CloudEditorActivity.this,"Permission Denied",Toast.LENGTH_LONG).show();
+                        Toast.makeText(CloudEditorActivity.this, "Permission Denied", Toast.LENGTH_LONG).show();
                     }
                 }
                 break;
@@ -377,7 +462,7 @@ public class CloudEditorActivity extends AppCompatActivity {
     public boolean checkPermission() {
         int result1 = ContextCompat.checkSelfPermission(getApplicationContext(),
                 RECORD_AUDIO);
-        return  result1 == PackageManager.PERMISSION_GRANTED;
+        return result1 == PackageManager.PERMISSION_GRANTED;
     }
 
 
@@ -388,7 +473,7 @@ public class CloudEditorActivity extends AppCompatActivity {
                 Locale.getDefault()).format(new Date());
         File mediaFile;
 
-         if (type == MEDIA_TYPE_SOUND) {
+        if (type == MEDIA_TYPE_SOUND) {
             String jyutpingString = mJyutpingEditText.getText().toString().trim();
             mediaFile = new File(getFilesDir() + File.separator
                     + jyutpingString + timeStamp + ".3gp");
@@ -399,17 +484,16 @@ public class CloudEditorActivity extends AppCompatActivity {
         return mediaFile;
     }
 
-    private void addValuesToFields(int wordid){
+    private void addValuesToFields(int wordid) {
         mEnglishEditText.setText("things english");
         mJyutpingEditText.setText("things juytping");
         mCantoneseEditText.setText("things cantonese");
         //mSoundtextview.setText("things sound location");
 
-        Toast.makeText(CloudEditorActivity.this, "word id is: "+ wordid,
-                Toast.LENGTH_LONG).show();
+
         final RequestQueue requestque = Volley.newRequestQueue(CloudEditorActivity.this);
 
-        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE_ID+"/?Wordid="+wordid,
+        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE_ID + "/?Wordid=" + wordid,
 
                 new Response.Listener<String>() {
                     @Override
@@ -422,7 +506,6 @@ public class CloudEditorActivity extends AppCompatActivity {
                         if (TextUtils.isEmpty(response)) {
                             return;
                         }
-
 
 
                         // Try to parse the JSON response string. If there's a problem with the way the JSON
@@ -473,8 +556,6 @@ public class CloudEditorActivity extends AppCompatActivity {
                             Log.e("QueryUtils", "Problem parsing the JSON results", e);
                         }
 
-
-
                         requestque.stop();
 
 
@@ -512,7 +593,71 @@ public class CloudEditorActivity extends AppCompatActivity {
 
     }
 
+    private void deleateWord() {
+
+        final RequestQueue requestque = Volley.newRequestQueue(CloudEditorActivity.this);
+
+        StringRequest request = new StringRequest(Request.Method.POST, URL_DELEAT_CANTONESE_WHERE_ID + "/?id=" + wordid,
+
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "Events Response: " + response.toString());
+
+                        // Extract relevant fields from the JSON response
+
+                        // If the JSON string is empty or null, then return early.
+                        if (TextUtils.isEmpty(response)) {
+                            return;
+                        }
 
 
+                        requestque.stop();
+
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        //textview.setText("someshit gone down!");
+                        volleyError.printStackTrace();
+                        Log.e(TAG, "Response error" + volleyError.getMessage());
+                        Toast.makeText(CloudEditorActivity.this,
+                                volleyError.getMessage(), Toast.LENGTH_LONG).show();
+                        String message = null;
+                        if (volleyError instanceof NetworkError) {
+                            message = getString(R.string.ConnectionErrorMessage);
+                        } else if (volleyError instanceof ServerError) {
+                            message = "The server could not be found. Please try again after some time!!";
+                        } else if (volleyError instanceof AuthFailureError) {
+                            message = "Cannot connect to Internet...Please check your connection!";
+                        } else if (volleyError instanceof ParseError) {
+                            message = "Parsing error! Please try again after some time!!";
+                        } else if (volleyError instanceof NoConnectionError) {
+                            message = "Cannot connect to Internet...Please check your connection!";
+                        } else if (volleyError instanceof TimeoutError) {
+                            message = "Connection TimeOut! Please check your internet connection.";
+                        }
+
+                        Toast.makeText(CloudEditorActivity.this, message, Toast.LENGTH_SHORT).show();
+                        requestque.stop();
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                // Posting params to register url
+                Map<String, String> params = new HashMap<String, String>();
+                //params.put("profile_picture", new FileBody(new File("/storage/emulated/0/Pictures/VSCOCam/2015-07-31 11.55.14 1.jpg")));
+                params.put("id", String.valueOf(wordid));
+
+
+                return params;
+
+            }
+
+        };
+        requestque.add(request);
 
     }
+}

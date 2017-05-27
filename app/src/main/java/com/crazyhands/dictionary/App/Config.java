@@ -18,4 +18,6 @@ public class Config {
 
     public static String URL_GET_CANTONESE_WHERE_ID = "http://s681173862.websitehome.co.uk/ian/Dictionary/getCantoneseWhereId.php";
 
+    public static String URL_DELEAT_CANTONESE_WHERE_ID = "http://s681173862.websitehome.co.uk/ian/Dictionary/DeleateSqlEntry.php";
+
 }

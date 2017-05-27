@@ -101,5 +101,24 @@ public  final class Contract {
         public static final String COLUMN_DICTIONARY_SOUND_ID = "Sound_id";
 
 
+
+        /**
+         * Possible values for the gender of the pet.
+         */
+        public static final int TYPE_ALL = 0;
+        public static final int TYPE_BASIC = 1;
+        public static final int TYPE_PHRASE = 2;
+        public static final int TYPE_NUMBER = 3;
+
+        /**
+         * Returns whether or not the given gender is {@link #TYPE_ALL}, {@link #TYPE_BASIC},
+         * or {@link #TYPE_PHRASE}.
+         */
+        public static boolean isValidGender(int type) {
+            if (type == TYPE_ALL || type == TYPE_BASIC || type == TYPE_PHRASE || type == TYPE_NUMBER) {
+                return true;
+            }
+            return false;
+        }
     }
 }

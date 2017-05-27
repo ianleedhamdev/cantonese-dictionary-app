@@ -53,7 +53,7 @@ public class NumbersFragment extends Fragment {
 
         final RequestQueue requestque = Volley.newRequestQueue(getActivity());
 
-        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE + "/?type=number",
+        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE + "/?type=3",
 
                 new Response.Listener<String>() {
                     @Override

@@ -55,7 +55,7 @@ public class PhrasesFragment extends Fragment {
 
         final RequestQueue requestque = Volley.newRequestQueue(getActivity());
 
-        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE + "/?type=phrase",
+        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE + "/?type=2",
 
                 new Response.Listener<String>() {
                     @Override

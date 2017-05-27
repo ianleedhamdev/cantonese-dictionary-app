@@ -56,7 +56,7 @@ public class BasicWordsFragment extends Fragment {
 
         final RequestQueue requestque = Volley.newRequestQueue(getActivity());
 
-        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE+"/?type=basic",
+        StringRequest request = new StringRequest(Request.Method.GET, URL_GET_CANTONESE_WHERE+"/?type=1",
 
                 new Response.Listener<String>() {
                     @Override

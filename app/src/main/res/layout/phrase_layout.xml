@@ -16,7 +16,8 @@
         android:layout_centerVertical="true"
         android:layout_weight="4"
         android:fontFamily="sans-serif"
-        android:padding="20dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="10dp"
         android:text="h"
         android:textAppearance="?android:textAppearanceLarge"
         android:textColor="#AEB6BD" />
@@ -27,12 +28,12 @@
         android:layout_toRightOf="@id/linearlay"
         android:layout_marginTop="5dp"
         android:layout_weight="4"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:orientation="vertical">
         <TextView
             android:id="@+id/phrase_textViewEnglish"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="5dp"
             android:fontFamily="sans-serif"
             android:textAppearance="?android:textAppearanceSmall"
             android:textColor="#2B3D4D" />
@@ -55,15 +56,13 @@ android:id="@+id/phrase_playbutton"
 android:layout_width="0dp"
 android:layout_height="wrap_content"
 android:layout_weight="2"
-android:padding="5dp"
 android:src="@drawable/ic_play_arrow_black_24dp" />
 <ImageView
 android:id="@+id/phrase_edit_word_button"
 android:layout_width="0dp"
 android:layout_height="wrap_content"
 android:layout_toRightOf="@id/phrase_playbutton"
-android:layout_weight="2"
-android:padding="5dp"
+android:layout_weight="3"
 android:src="@mipmap/ic_dots" />
     </LinearLayout>
 </LinearLayout>

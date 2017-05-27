@@ -18,6 +18,12 @@
     <string name="ConnectionErrorMessage">Connection error</string>
     <string name="to_cloud_version">To the cloud!</string>
 
+    <string name="type_number">number</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="category_type">type</string>
+    <string name="type_phrase">phrase</string>
+    <string name="type_all">other</string>
+    <string name="type_basic">basic character</string>
 </resources>
